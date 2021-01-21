@@ -14,7 +14,7 @@ let decrypted;
 async function processEvent(event,context,callback) {
 
     // filtering for unlock event
-    if ((event.action.trim() == "unlock") && event.actor_type.trim() == "User" && event.success == true) {
+    if ((event.action.trim() == "unlock") && event.success == true) {
             
 
         async function addUserToGroup(email, group_id) {  
@@ -37,7 +37,6 @@ async function processEvent(event,context,callback) {
                             .post("shares", share)
                             .then(share => console.log(share))
                             .catch(error => console.log(error))
-
                         
                     }
                 })
@@ -53,40 +52,40 @@ async function processEvent(event,context,callback) {
         
         }
 
-        if (event.object_id == 15741) {       
+        async function unlockDoor(lock_id) {
+            await kisiClient.post(`locks/${lock_id}/unlock`, unlock)
+            .then(unlock_message => console.log(unlock_message))
+            .catch(error => console.log(error))
+            
+        }
+
+        if (event.object_id == process.env.DOOR_IN) {      
+            await unlockDoor(process.env.DOOR_OUT) 
+
             await kisiClient.get(`shares/${event.references[2].id}`)
                 .then(async function(share) {
                     console.log(share)
-
-                   await kisiClient
-                        .get(`members/${share.memberId}`)
-                        .then(async function(member)  { 
-                            console.log(member)
-                            if (member.roleId.trim() != "administrator") {
-                                await addUserToGroup(share.email.trim(), 18642)
-                                await removeUserFromGroup()
-                            }
-                        })
-                        .catch(error => console.log(error))
+                    if (share.role != 'administrator') {
+                        await addUserToGroup(share.email.trim(), process.env.DOOR_OUT_GROUP)
+                        await removeUserFromGroup()
+                    }
+                       
                 })
                 .catch(error => console.log(error))
                 
-        } else if(event.object_id == 15743) {
+        } else if(event.object_id == process.env.DOOR_OUT) {
+
+            
 
             await kisiClient.get(`shares/${event.references[2].id}`)
                 .then(async function(share) {
 
                     console.log(share)
-                    kisiClient
-                        .get(`members/${share.memberId}`)
-                        .then(async function(member) {
-                            console.log(member)
-                            if (member.roleId.trim() != "administrator") {
-                                await addUserToGroup(share.email.trim(), 18586)
-                                await removeUserFromGroup()
-                            }
-                        })
-                        .catch(error => console.log(error))
+                    
+                    if (share.role != 'administrator') {
+                        await addUserToGroup(share.email.trim(), process.env.DOOR_IN_GROUP)
+                        await removeUserFromGroup()
+                    }
                 })
                 .catch(error => console.log(error))
             
