@@ -45,7 +45,6 @@ async function processEvent(event,context,callback) {
         }
 
         async function removeUserFromGroup() {        
-
             await kisiClient.delete(`shares/${event.references[2].id}`)     // deletes a user with a given share
             .then(share => console.log(share))
             .catch(error => console.log(error))
@@ -53,15 +52,13 @@ async function processEvent(event,context,callback) {
         }
 
         async function unlockDoor(lock_id) {
-            await kisiClient.post(`locks/${lock_id}/unlock`, unlock)
+            await kisiClient.post(`locks/${lock_id}/unlock`)
             .then(unlock_message => console.log(unlock_message))
             .catch(error => console.log(error))
             
         }
 
         if (event.object_id == process.env.DOOR_IN) {      
-            await unlockDoor(process.env.DOOR_OUT) 
-
             await kisiClient.get(`shares/${event.references[2].id}`)
                 .then(async function(share) {
                     console.log(share)
@@ -75,7 +72,7 @@ async function processEvent(event,context,callback) {
                 
         } else if(event.object_id == process.env.DOOR_OUT) {
 
-            
+            await unlockDoor(process.env.DOOR_IN) 
 
             await kisiClient.get(`shares/${event.references[2].id}`)
                 .then(async function(share) {
@@ -92,7 +89,6 @@ async function processEvent(event,context,callback) {
         }
     }
 
-    
     callback(null, 'Ok')
 }
 
