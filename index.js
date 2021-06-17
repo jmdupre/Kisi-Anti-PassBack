@@ -2,13 +2,35 @@ const Kisi =  require("./kisi-client.js")
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'us-east-1' });
 
-
 require("regenerator-runtime");
 require("dotenv").config()
 
 const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME;
 const encrypted = process.env['KISI_API'];
 const kisiClient = new Kisi()
+
+const In_Doors=[
+ process.env.DOOR_IN,  process.env.TLC_DOOR_IN,process.env.ODC_T_DOOR_IN
+]//  
+
+const Out_Door_Dict ={
+  process.env.DOOR_OUT : process.env.DOOR_IN,
+  process.env.TLC_DOOR_OUT : process.env.TLC_DOOR_IN,
+  process.env.ODC_T_DOOR_OUT : process.env.ODC_T_DOOR_IN
+} //  outDoor maps to corresponding indoor 
+
+
+const DOOR_GROUP={
+  process.env.DOOR_IN : process.env.DOOR_OUT_GROUP,
+  process.env.DOOR_OUT : process.env.DOOR_IN_GROUP,
+  process.env.TLC_DOOR_IN : process.env.TLC_DOOR_0UT_GROUP,
+  process.env.TLC_DOOR_OUT : process.env.TLC_DOOR_IN_GROUP,
+  process.env.ODC_T_DOOR_OUT : process.env.ODC_T_DOOR_IN_GROUP,
+  process.env.ODC_T_DOOR_IN : process.env.ODC_T_DOOR_OUT_GROUP
+}//  Door maps to coresponding door_Out_Group and viceversa
+
+
+
 let decrypted;
 
 async function processEvent(event,context,callback) {
@@ -19,7 +41,6 @@ async function processEvent(event,context,callback) {
 
         async function addUserToGroup(email, group_id) {  
             console.log('starting adding function')
-
             const share = {                    
                 "user_id" : event.actor_id,
                 "group_id" : group_id
@@ -37,7 +58,6 @@ async function processEvent(event,context,callback) {
                             .post("shares", share)
                             .then(share => console.log(share))
                             .catch(error => console.log(error))
-                        
                     }
                 })
                 .catch(error => console.log(error))
@@ -58,37 +78,32 @@ async function processEvent(event,context,callback) {
             
         }
 
-        if (event.object_id == process.env.DOOR_IN) {      
+        if (In_Doors.includes(event.object_id)) {
             await kisiClient.get(`shares/${event.references[2].id}`)
                 .then(async function(share) {
                     console.log(share)
                     if (share.role != 'administrator') {
-                        await addUserToGroup(share.email.trim(), process.env.DOOR_OUT_GROUP)
+                        await addUserToGroup(share.email.trim(), DOOR_GROUP[event.object_id])
                         await removeUserFromGroup()
                     }
-                       
                 })
                 .catch(error => console.log(error))
                 
-        } else if(event.object_id == process.env.DOOR_OUT) {
+        } else if(Out_Door_Dict.hasOwnProperty(event.object_id)) {
 
-            await unlockDoor(process.env.DOOR_IN) 
+            await unlockDoor(Out_Door_Dict[event.object_id]) 
 
             await kisiClient.get(`shares/${event.references[2].id}`)
                 .then(async function(share) {
-
-                    console.log(share)
-                    
+                    console.log(share)                   
                     if (share.role != 'administrator') {
-                        await addUserToGroup(share.email.trim(), process.env.DOOR_IN_GROUP)
+                        await addUserToGroup(share.email.trim(), DOOR_GROUP[event.object_id])
                         await removeUserFromGroup()
                     }
                 })
-                .catch(error => console.log(error))
-            
+                .catch(error => console.log(error))    
         }
     }
-
     callback(null, 'Ok')
 }
 
@@ -111,3 +126,4 @@ exports.handler = async function(event, context, callback) {
     }
     await processEvent(event,context, callback);
 };
+
