@@ -11,22 +11,22 @@ const kisiClient = new Kisi()
 
 const In_Doors=[
  process.env.DOOR_IN,  process.env.TLC_DOOR_IN,process.env.ODC_T_DOOR_IN
-]//  
+]
 
-const Out_Door_Dict ={
-  process.env.DOOR_OUT : process.env.DOOR_IN,
-  process.env.TLC_DOOR_OUT : process.env.TLC_DOOR_IN,
-  process.env.ODC_T_DOOR_OUT : process.env.ODC_T_DOOR_IN
+const Out_Door_Dict={
+ `${process.env.DOOR_OUT}` : process.env.DOOR_IN,
+ `${process.env.TLC_DOOR_OUT}` : process.env.TLC_DOOR_IN,
+ `${process.env.ODC_T_DOOR_OUT}` : process.env.ODC_T_DOOR_IN
 } //  outDoor maps to corresponding indoor 
 
 
 const DOOR_GROUP={
-  process.env.DOOR_IN : process.env.DOOR_OUT_GROUP,
-  process.env.DOOR_OUT : process.env.DOOR_IN_GROUP,
-  process.env.TLC_DOOR_IN : process.env.TLC_DOOR_0UT_GROUP,
-  process.env.TLC_DOOR_OUT : process.env.TLC_DOOR_IN_GROUP,
-  process.env.ODC_T_DOOR_OUT : process.env.ODC_T_DOOR_IN_GROUP,
-  process.env.ODC_T_DOOR_IN : process.env.ODC_T_DOOR_OUT_GROUP
+  `${process.env.DOOR_IN}` : process.env.DOOR_OUT_GROUP,
+  `${process.env.DOOR_OUT}` : process.env.DOOR_IN_GROUP,
+  `${process.env.TLC_DOOR_IN}` : process.env.TLC_DOOR_0UT_GROUP,
+  `${process.env.TLC_DOOR_OUT}` : process.env.TLC_DOOR_IN_GROUP,
+  `${process.env.ODC_T_DOOR_OUT}` : process.env.ODC_T_DOOR_IN_GROUP,
+  `${process.env.ODC_T_DOOR_IN}` : process.env.ODC_T_DOOR_OUT_GROUP
 }//  Door maps to coresponding door_Out_Group and viceversa
 
 
